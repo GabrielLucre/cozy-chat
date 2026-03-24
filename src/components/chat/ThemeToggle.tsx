@@ -11,7 +11,7 @@ const ThemeToggle = ({ dark, toggle }: ThemeToggleProps) => (
     whileTap={{ scale: 0.9 }}
     onClick={toggle}
     className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-    aria-label="Toggle theme"
+    aria-label="Alternar tema"
   >
     {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
   </motion.button>

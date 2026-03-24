@@ -119,7 +119,7 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
                 animate={{ opacity: 1 }}
                 className="text-xs text-muted-foreground italic ml-3"
               >
-                {filteredTyping.join(", ")} {filteredTyping.length === 1 ? "is" : "are"} typing…
+                {filteredTyping.join(", ")} {filteredTyping.length === 1 ? "está digitando…" : "estão digitando…"}
               </motion.div>
             )}
             <div ref={bottomRef} />
@@ -136,7 +136,7 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
               className="absolute right-0 top-0 z-10 h-full w-56 border-l bg-card shadow-lg md:relative md:shadow-none"
             >
               <div className="flex items-center justify-between border-b px-3 py-2 md:hidden">
-                <span className="text-xs font-semibold text-muted-foreground">Users</span>
+                <span className="text-xs font-semibold text-muted-foreground">Usuários</span>
                 <button onClick={() => setShowUsers(false)} className="text-muted-foreground">
                   <X className="h-4 w-4" />
                 </button>
@@ -181,7 +181,7 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
             value={input}
             onChange={(e) => { setInput(e.target.value); sendTyping(); }}
             onKeyDown={handleKeyDown}
-            placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Type a message..."}
+            placeholder={replyingTo ? `Respondendo a ${replyingTo.username}...` : "Digite uma mensagem..."}
             className="flex-1 rounded-xl border bg-card px-4 py-2.5 text-sm text-card-foreground placeholder:text-muted-foreground outline-none ring-ring focus:ring-2 transition-shadow"
           />
           <motion.button
