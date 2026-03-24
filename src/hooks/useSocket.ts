@@ -1,18 +1,25 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
+export interface Reactions {
+  [emoji: string]: string[]; // emoji -> list of usernames
+}
+
 export interface ChatMessage {
   id: string;
   type: "message" | "system";
   username?: string;
   content: string;
   timestamp: number;
+  reactions?: Reactions;
 }
 
 export interface OnlineUser {
   id: string;
   username: string;
 }
+
+export const REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
 
 const SERVER_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
 
@@ -40,6 +47,12 @@ export function useSocket() {
     s.on("users", (users: OnlineUser[]) => setOnlineUsers(users));
     s.on("typing", (users: string[]) => setTypingUsers(users));
 
+    s.on("reaction-updated", ({ messageId, reactions }: { messageId: string; reactions: Reactions }) => {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, reactions } : m))
+      );
+    });
+
     setSocket(s);
     return () => { s.disconnect(); };
   }, []);
@@ -54,9 +67,13 @@ export function useSocket() {
     typingTimeout.current = setTimeout(() => socket?.emit("stop-typing"), 2000);
   }, [socket]);
 
+  const toggleReaction = useCallback((messageId: string, emoji: string) => {
+    socket?.emit("toggle-reaction", { messageId, emoji });
+  }, [socket]);
+
   useEffect(() => {
     return () => { socket?.disconnect(); };
   }, [socket]);
 
-  return { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, sendTyping };
+  return { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, sendTyping, toggleReaction };
 }
