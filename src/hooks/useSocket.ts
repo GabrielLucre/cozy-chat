@@ -2,7 +2,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
 export interface Reactions {
-  [emoji: string]: string[]; // emoji -> list of usernames
+  [emoji: string]: string[];
+}
+
+export interface ReplyTo {
+  id: string;
+  username: string;
+  content: string;
 }
 
 export interface ChatMessage {
@@ -12,6 +18,7 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
   reactions?: Reactions;
+  replyTo?: ReplyTo;
 }
 
 export interface OnlineUser {
@@ -57,8 +64,8 @@ export function useSocket() {
     return () => { s.disconnect(); };
   }, []);
 
-  const sendMessage = useCallback((content: string) => {
-    socket?.emit("message", content);
+  const sendMessage = useCallback((content: string, replyTo?: ReplyTo) => {
+    socket?.emit("message", { content, replyTo });
   }, [socket]);
 
   const sendTyping = useCallback(() => {

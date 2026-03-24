@@ -55,9 +55,15 @@ io.on("connection", (socket) => {
     console.log(`${username} joined (${users.size} users online)`);
   });
 
-  socket.on("message", (content) => {
+  socket.on("message", (data) => {
     const user = users.get(socket.id);
-    if (!user || !content.trim()) return;
+    if (!user) return;
+
+    // Support both old string format and new object format
+    const content = typeof data === "string" ? data : data.content;
+    const replyTo = typeof data === "object" ? data.replyTo : undefined;
+
+    if (!content || !content.trim()) return;
 
     const msgId = randomUUID();
     const msg = {
@@ -68,6 +74,14 @@ io.on("connection", (socket) => {
       timestamp: Date.now(),
       reactions: {},
     };
+
+    if (replyTo) {
+      msg.replyTo = {
+        id: replyTo.id,
+        username: replyTo.username,
+        content: replyTo.content,
+      };
+    }
 
     messageReactions.set(msgId, {});
 
