@@ -13,7 +13,7 @@ interface ChatRoomProps {
 }
 
 const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
-  const { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, sendTyping } = useSocket();
+  const { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, sendTyping, toggleReaction } = useSocket();
   const { dark, toggle } = useTheme();
   const [input, setInput] = useState("");
   const [showUsers, setShowUsers] = useState(false);
@@ -92,6 +92,9 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
                   timestamp={msg.timestamp}
                   isOwn={msg.username === username}
                   showName={shouldShowName(msg, i)}
+                  reactions={msg.reactions}
+                  currentUser={username}
+                  onReact={(emoji) => toggleReaction(msg.id, emoji)}
                 />
               )
             )}
