@@ -14,6 +14,7 @@ const io = new Server(server, {
 // In-memory state
 const users = new Map(); // socketId -> { id, username }
 const typingUsers = new Set(); // usernames currently typing
+const messageReactions = new Map(); // messageId -> { emoji: [usernames] }
 
 // Simple profanity filter
 const BLOCKED = ["fuck", "shit", "ass", "bitch", "damn", "dick", "crap"];
@@ -58,17 +59,43 @@ io.on("connection", (socket) => {
     const user = users.get(socket.id);
     if (!user || !content.trim()) return;
 
+    const msgId = randomUUID();
     const msg = {
-      id: randomUUID(),
+      id: msgId,
       type: "message",
       username: user.username,
       content: filterMessage(content.trim()),
       timestamp: Date.now(),
+      reactions: {},
     };
+
+    messageReactions.set(msgId, {});
 
     io.emit("message", msg);
     typingUsers.delete(user.username);
     broadcastTyping();
+  });
+
+  socket.on("toggle-reaction", ({ messageId, emoji }) => {
+    const user = users.get(socket.id);
+    if (!user) return;
+
+    let reactions = messageReactions.get(messageId);
+    if (!reactions) {
+      reactions = {};
+      messageReactions.set(messageId, reactions);
+    }
+
+    if (!reactions[emoji]) reactions[emoji] = [];
+
+    const idx = reactions[emoji].indexOf(user.username);
+    if (idx >= 0) {
+      reactions[emoji].splice(idx, 1);
+    } else {
+      reactions[emoji].push(user.username);
+    }
+
+    io.emit("reaction-updated", { messageId, reactions: { ...reactions } });
   });
 
   socket.on("typing", () => {
