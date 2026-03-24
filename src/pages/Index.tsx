@@ -1,18 +1,15 @@
 import { useState } from "react";
 import JoinScreen from "@/components/chat/JoinScreen";
 import ChatRoom from "@/components/chat/ChatRoom";
-import { useSocket } from "@/hooks/useSocket";
 import { useTheme } from "@/hooks/useTheme";
 
 const Index = () => {
-  const { connect, username } = useSocket();
   const [joined, setJoined] = useState(false);
-
-  // Initialize theme on mount
+  const [username, setUsername] = useState("");
   useTheme();
 
   const handleJoin = (name: string) => {
-    connect(name);
+    setUsername(name);
     setJoined(true);
   };
 
@@ -20,7 +17,7 @@ const Index = () => {
     return <JoinScreen onJoin={handleJoin} />;
   }
 
-  return <ChatRoom />;
+  return <ChatRoom initialUsername={username} />;
 };
 
 export default Index;

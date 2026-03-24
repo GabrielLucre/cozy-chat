@@ -8,12 +8,24 @@ import SystemMessage from "./SystemMessage";
 import UsersList from "./UsersList";
 import ThemeToggle from "./ThemeToggle";
 
-const ChatRoom = () => {
+interface ChatRoomProps {
+  initialUsername: string;
+}
+
+const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
   const { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, sendTyping } = useSocket();
   const { dark, toggle } = useTheme();
   const [input, setInput] = useState("");
   const [showUsers, setShowUsers] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const hasConnected = useRef(false);
+
+  useEffect(() => {
+    if (!hasConnected.current) {
+      hasConnected.current = true;
+      connect(initialUsername);
+    }
+  }, [initialUsername, connect]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -43,7 +55,6 @@ const ChatRoom = () => {
 
   return (
     <div className="flex h-screen flex-col">
-      {/* Header */}
       <header className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <h1 className="text-sm font-bold tracking-tight">LAN Chat</h1>
@@ -68,10 +79,9 @@ const ChatRoom = () => {
       </header>
 
       <div className="relative flex flex-1 overflow-hidden">
-        {/* Messages area */}
         <main className="flex flex-1 flex-col overflow-y-auto scrollbar-thin px-4 py-3">
           <div className="mt-auto flex flex-col gap-2">
-            {messages.map((msg) =>
+            {messages.map((msg, i) =>
               msg.type === "system" ? (
                 <SystemMessage key={msg.id} content={msg.content} />
               ) : (
@@ -81,7 +91,7 @@ const ChatRoom = () => {
                   username={msg.username!}
                   timestamp={msg.timestamp}
                   isOwn={msg.username === username}
-                  showName={shouldShowName(msg, messages.indexOf(msg))}
+                  showName={shouldShowName(msg, i)}
                 />
               )
             )}
@@ -99,7 +109,6 @@ const ChatRoom = () => {
           </div>
         </main>
 
-        {/* Users sidebar */}
         <AnimatePresence>
           {showUsers && (
             <motion.aside
@@ -121,7 +130,6 @@ const ChatRoom = () => {
         </AnimatePresence>
       </div>
 
-      {/* Input bar */}
       <footer className="border-t px-4 py-3">
         <div className="flex items-center gap-2">
           <input
