@@ -17,7 +17,7 @@ const UsersList = ({ users, currentUser }: UsersListProps) => (
         <span className={u.username === currentUser ? "font-semibold" : ""}>
           {u.username}
           {u.username === currentUser && (
-            <span className="ml-1 text-xs text-muted-foreground">(you)</span>
+            <span className="ml-1 text-xs text-muted-foreground">(você)</span>
           )}
         </span>
       </div>

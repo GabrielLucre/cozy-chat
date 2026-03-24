@@ -36,7 +36,7 @@ const JoinScreen = ({ onJoin }: JoinScreenProps) => {
           </motion.div>
           <h1 className="text-2xl font-bold tracking-tight">LAN Chat</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Join the conversation on your local network
+            Entre na conversa pela sua rede local
           </p>
         </div>
 
@@ -46,13 +46,13 @@ const JoinScreen = ({ onJoin }: JoinScreenProps) => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your display name..."
+              placeholder="Digite seu nome de exibição..."
               maxLength={20}
               autoFocus
               className="w-full rounded-xl border bg-card px-4 py-3 text-sm text-card-foreground placeholder:text-muted-foreground outline-none ring-ring focus:ring-2 transition-shadow"
             />
             <p className="mt-1.5 text-xs text-muted-foreground">
-              2–20 characters
+              2–20 caracteres
             </p>
           </div>
 
@@ -63,7 +63,7 @@ const JoinScreen = ({ onJoin }: JoinScreenProps) => {
             disabled={name.trim().length < 2}
             className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-40"
           >
-            Join Chat
+            Entrar no Chat
           </motion.button>
         </form>
       </motion.div>

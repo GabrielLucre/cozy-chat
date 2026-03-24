@@ -4,23 +4,23 @@ import { Smile } from "lucide-react";
 
 const EMOJI_CATEGORIES: { label: string; emojis: string[] }[] = [
   {
-    label: "Smileys",
+    label: "Carinhas",
     emojis: ["😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "😋", "😛", "😜", "🤪", "😝", "🤑", "🤗", "🤭", "🤫", "🤔", "😐", "😑", "😶", "😏", "😒", "🙄", "😬", "😮‍💨", "🤥"],
   },
   {
-    label: "Gestures",
+    label: "Gestos",
     emojis: ["👋", "🤚", "🖐️", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🙏", "💪"],
   },
   {
-    label: "Hearts",
+    label: "Corações",
     emojis: ["❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❤️‍🔥", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "💟"],
   },
   {
-    label: "Objects",
+    label: "Objetos",
     emojis: ["🔥", "⭐", "🌟", "✨", "💫", "🎉", "🎊", "🎈", "🎁", "🏆", "🥇", "🎯", "💡", "📌", "📎", "✅", "❌", "⚠️", "🚀", "💯", "🎵", "🎶", "☕", "🍕", "🍔", "🌮", "🍩", "🍺", "🥂", "🎮"],
   },
   {
-    label: "Faces",
+    label: "Rostos",
     emojis: ["😢", "😭", "😤", "😠", "😡", "🤬", "😈", "👿", "💀", "☠️", "💩", "🤡", "👹", "👺", "👻", "👽", "🤖", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾"],
   },
 ];
@@ -41,7 +41,7 @@ const EmojiPicker = ({ onSelect }: EmojiPickerProps) => {
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        aria-label="Emoji picker"
+        aria-label="Seletor de emojis"
       >
         <Smile className="h-5 w-5" />
       </motion.button>
