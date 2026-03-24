@@ -64,7 +64,7 @@ const MessageBubble = ({ content, username, timestamp, isOwn, showName, reaction
           <button
             onClick={onReply}
             className="rounded-full h-6 w-6 flex items-center justify-center bg-muted text-muted-foreground text-xs hover:bg-secondary transition-colors"
-            title="Reply"
+            title="Responder"
           >
             <Reply className="h-3 w-3" />
           </button>
