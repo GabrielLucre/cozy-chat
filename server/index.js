@@ -137,7 +137,7 @@ io.on("connection", (socket) => {
       io.emit("system", {
         id: randomUUID(),
         type: "system",
-        content: `${user.username} left the chat`,
+        content: `${user.username} saiu do chat`,
         timestamp: Date.now(),
       });
 
