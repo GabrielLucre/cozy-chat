@@ -7,6 +7,7 @@ import MessageBubble from "./MessageBubble";
 import SystemMessage from "./SystemMessage";
 import UsersList from "./UsersList";
 import ThemeToggle from "./ThemeToggle";
+import EmojiPicker from "./EmojiPicker";
 
 interface ChatRoomProps {
   initialUsername: string;
@@ -174,6 +175,7 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
 
       <footer className="border-t px-4 py-3">
         <div className="flex items-center gap-2">
+          <EmojiPicker onSelect={(emoji) => { setInput((v) => v + emoji); inputRef.current?.focus(); }} />
           <input
             ref={inputRef}
             value={input}
