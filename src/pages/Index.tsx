@@ -1,16 +1,23 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import JoinScreen from "@/components/chat/JoinScreen";
+import ChatRoom from "@/components/chat/ChatRoom";
+import { useTheme } from "@/hooks/useTheme";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
-  return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
-    </div>
-  );
+const Index = () => {
+  const [joined, setJoined] = useState(false);
+  const [username, setUsername] = useState("");
+  useTheme();
+
+  const handleJoin = (name: string) => {
+    setUsername(name);
+    setJoined(true);
+  };
+
+  if (!joined) {
+    return <JoinScreen onJoin={handleJoin} />;
+  }
+
+  return <ChatRoom initialUsername={username} />;
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;

@@ -1,0 +1,111 @@
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const { randomUUID } = require("crypto");
+
+const app = express();
+const server = http.createServer(app);
+const PORT = process.env.PORT || 3001;
+
+const io = new Server(server, {
+  cors: { origin: "*", methods: ["GET", "POST"] },
+});
+
+// In-memory state
+const users = new Map(); // socketId -> { id, username }
+const typingUsers = new Set(); // usernames currently typing
+
+// Simple profanity filter
+const BLOCKED = ["fuck", "shit", "ass", "bitch", "damn", "dick", "crap"];
+function filterMessage(text) {
+  let filtered = text;
+  BLOCKED.forEach((word) => {
+    const regex = new RegExp(`\\b${word}\\b`, "gi");
+    filtered = filtered.replace(regex, "*".repeat(word.length));
+  });
+  return filtered;
+}
+
+function broadcastUsers() {
+  const list = Array.from(users.values());
+  io.emit("users", list);
+}
+
+function broadcastTyping() {
+  const list = Array.from(typingUsers);
+  io.emit("typing", list);
+}
+
+io.on("connection", (socket) => {
+  console.log(`Socket connected: ${socket.id}`);
+
+  socket.on("join", (username) => {
+    const user = { id: socket.id, username };
+    users.set(socket.id, user);
+    broadcastUsers();
+
+    io.emit("system", {
+      id: randomUUID(),
+      type: "system",
+      content: `${username} joined the chat`,
+      timestamp: Date.now(),
+    });
+
+    console.log(`${username} joined (${users.size} users online)`);
+  });
+
+  socket.on("message", (content) => {
+    const user = users.get(socket.id);
+    if (!user || !content.trim()) return;
+
+    const msg = {
+      id: randomUUID(),
+      type: "message",
+      username: user.username,
+      content: filterMessage(content.trim()),
+      timestamp: Date.now(),
+    };
+
+    io.emit("message", msg);
+    typingUsers.delete(user.username);
+    broadcastTyping();
+  });
+
+  socket.on("typing", () => {
+    const user = users.get(socket.id);
+    if (!user) return;
+    typingUsers.add(user.username);
+    broadcastTyping();
+  });
+
+  socket.on("stop-typing", () => {
+    const user = users.get(socket.id);
+    if (!user) return;
+    typingUsers.delete(user.username);
+    broadcastTyping();
+  });
+
+  socket.on("disconnect", () => {
+    const user = users.get(socket.id);
+    if (user) {
+      typingUsers.delete(user.username);
+      users.delete(socket.id);
+      broadcastUsers();
+      broadcastTyping();
+
+      io.emit("system", {
+        id: randomUUID(),
+        type: "system",
+        content: `${user.username} left the chat`,
+        timestamp: Date.now(),
+      });
+
+      console.log(`${user.username} left (${users.size} users online)`);
+    }
+  });
+});
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`\n🚀 Chat server running on http://0.0.0.0:${PORT}`);
+  console.log(`   Share your local IP with others on the network to connect!\n`);
+});
