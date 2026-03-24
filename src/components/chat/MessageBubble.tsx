@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { REACTION_EMOJIS, Reactions } from "@/hooks/useSocket";
+import { Reply } from "lucide-react";
+import { REACTION_EMOJIS, Reactions, ReplyTo } from "@/hooks/useSocket";
 
 interface MessageBubbleProps {
   content: string;
@@ -10,10 +11,12 @@ interface MessageBubbleProps {
   showName: boolean;
   reactions?: Reactions;
   currentUser: string | null;
+  replyTo?: ReplyTo;
   onReact: (emoji: string) => void;
+  onReply: () => void;
 }
 
-const MessageBubble = ({ content, username, timestamp, isOwn, showName, reactions, currentUser, onReact }: MessageBubbleProps) => {
+const MessageBubble = ({ content, username, timestamp, isOwn, showName, reactions, currentUser, replyTo, onReact, onReply }: MessageBubbleProps) => {
   const [showPicker, setShowPicker] = useState(false);
   const time = new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
@@ -42,18 +45,36 @@ const MessageBubble = ({ content, username, timestamp, isOwn, showName, reaction
               : "bg-bubble-other text-bubble-other-foreground rounded-bl-md"
           }`}
         >
+          {/* Reply quote block */}
+          {replyTo && (
+            <div className={`mb-2 rounded-lg border-l-2 border-primary/50 px-2.5 py-1.5 text-xs ${
+              isOwn ? "bg-bubble-own-foreground/5" : "bg-bubble-other-foreground/5"
+            }`}>
+              <span className="font-semibold text-primary">{replyTo.username}</span>
+              <p className="mt-0.5 line-clamp-2 text-muted-foreground">{replyTo.content}</p>
+            </div>
+          )}
           {content}
         </div>
 
-        {/* Reaction trigger button */}
-        <button
-          onClick={() => setShowPicker((p) => !p)}
-          className={`absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity rounded-full h-6 w-6 flex items-center justify-center bg-muted text-muted-foreground text-xs hover:bg-secondary ${
-            isOwn ? "-left-8" : "-right-8"
-          }`}
-        >
-          😊
-        </button>
+        {/* Action buttons on hover */}
+        <div className={`absolute top-1/2 -translate-y-1/2 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ${
+          isOwn ? "-left-16" : "-right-16"
+        }`}>
+          <button
+            onClick={onReply}
+            className="rounded-full h-6 w-6 flex items-center justify-center bg-muted text-muted-foreground text-xs hover:bg-secondary transition-colors"
+            title="Reply"
+          >
+            <Reply className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => setShowPicker((p) => !p)}
+            className="rounded-full h-6 w-6 flex items-center justify-center bg-muted text-muted-foreground text-xs hover:bg-secondary transition-colors"
+          >
+            😊
+          </button>
+        </div>
 
         {/* Emoji picker popover */}
         <AnimatePresence>

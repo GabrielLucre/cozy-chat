@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Users, X } from "lucide-react";
-import { useSocket, ChatMessage } from "@/hooks/useSocket";
+import { useSocket, ChatMessage, ReplyTo } from "@/hooks/useSocket";
 import { useTheme } from "@/hooks/useTheme";
 import MessageBubble from "./MessageBubble";
 import SystemMessage from "./SystemMessage";
@@ -17,7 +17,9 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
   const { dark, toggle } = useTheme();
   const [input, setInput] = useState("");
   const [showUsers, setShowUsers] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const hasConnected = useRef(false);
 
   useEffect(() => {
@@ -34,8 +36,9 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
   const handleSend = () => {
     const trimmed = input.trim();
     if (!trimmed) return;
-    sendMessage(trimmed);
+    sendMessage(trimmed, replyingTo || undefined);
     setInput("");
+    setReplyingTo(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -43,6 +46,14 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
       e.preventDefault();
       handleSend();
     }
+    if (e.key === "Escape" && replyingTo) {
+      setReplyingTo(null);
+    }
+  };
+
+  const handleReply = (msg: ChatMessage) => {
+    setReplyingTo({ id: msg.id, username: msg.username!, content: msg.content });
+    inputRef.current?.focus();
   };
 
   const shouldShowName = (msg: ChatMessage, i: number) => {
@@ -94,7 +105,9 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
                   showName={shouldShowName(msg, i)}
                   reactions={msg.reactions}
                   currentUser={username}
+                  replyTo={msg.replyTo}
                   onReact={(emoji) => toggleReaction(msg.id, emoji)}
+                  onReply={() => handleReply(msg)}
                 />
               )
             )}
@@ -133,13 +146,40 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
         </AnimatePresence>
       </div>
 
+      {/* Reply preview bar */}
+      <AnimatePresence>
+        {replyingTo && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden border-t"
+          >
+            <div className="flex items-center gap-2 bg-muted/50 px-4 py-2">
+              <div className="flex-1 min-w-0 border-l-2 border-primary pl-2.5">
+                <span className="text-xs font-semibold text-primary">{replyingTo.username}</span>
+                <p className="text-xs text-muted-foreground truncate">{replyingTo.content}</p>
+              </div>
+              <button
+                onClick={() => setReplyingTo(null)}
+                className="shrink-0 rounded-lg p-1 text-muted-foreground hover:bg-muted transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <footer className="border-t px-4 py-3">
         <div className="flex items-center gap-2">
           <input
+            ref={inputRef}
             value={input}
             onChange={(e) => { setInput(e.target.value); sendTyping(); }}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
+            placeholder={replyingTo ? `Reply to ${replyingTo.username}...` : "Type a message..."}
             className="flex-1 rounded-xl border bg-card px-4 py-2.5 text-sm text-card-foreground placeholder:text-muted-foreground outline-none ring-ring focus:ring-2 transition-shadow"
           />
           <motion.button
