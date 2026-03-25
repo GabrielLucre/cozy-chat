@@ -1,17 +1,32 @@
 import { useEffect, useState } from "react";
 
+const DAISY_THEMES = [
+  "light", "dark", "cupcake", "bumblebee", "emerald", "corporate",
+  "synthwave", "retro", "cyberpunk", "valentine", "halloween", "garden",
+  "forest", "aqua", "lofi", "pastel", "fantasy", "wireframe", "black",
+  "luxury", "dracula", "cmyk", "autumn", "business", "acid", "lemonade",
+  "night", "coffee", "winter", "dim", "nord", "sunset",
+] as const;
+
+export type DaisyTheme = (typeof DAISY_THEMES)[number];
+
 export function useTheme() {
-  const [dark, setDark] = useState(() => {
+  const [theme, setTheme] = useState<DaisyTheme>(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("chat-theme") === "dark";
+      return (localStorage.getItem("chat-theme") as DaisyTheme) || "light";
     }
-    return false;
+    return "light";
   });
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    localStorage.setItem("chat-theme", dark ? "dark" : "light");
-  }, [dark]);
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("chat-theme", theme);
+  }, [theme]);
 
-  return { dark, toggle: () => setDark((d) => !d) };
+  const dark = [
+    "dark", "synthwave", "halloween", "forest", "black", "luxury",
+    "dracula", "business", "night", "coffee", "dim", "sunset",
+  ].includes(theme);
+
+  return { theme, setTheme, dark, themes: DAISY_THEMES };
 }

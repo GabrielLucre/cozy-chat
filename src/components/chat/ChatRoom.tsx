@@ -15,7 +15,7 @@ interface ChatRoomProps {
 
 const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
   const { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, sendTyping, toggleReaction } = useSocket();
-  const { dark, toggle } = useTheme();
+  const { theme, setTheme, themes } = useTheme();
   const [input, setInput] = useState("");
   const [showUsers, setShowUsers] = useState(false);
   const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
@@ -77,7 +77,7 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
           )}
         </div>
         <div className="flex items-center gap-1">
-          <ThemeToggle dark={dark} toggle={toggle} />
+          <ThemeToggle theme={theme} themes={themes} setTheme={setTheme} />
           <button
             onClick={() => setShowUsers(!showUsers)}
             className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
