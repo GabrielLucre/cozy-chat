@@ -13,8 +13,9 @@ const io = new Server(server, {
 
 // In-memory state
 const users = new Map(); // socketId -> { id, username }
-const typingUsers = new Set(); // usernames currently typing
+const typingUsers = new Set();
 const messageReactions = new Map(); // messageId -> { emoji: [usernames] }
+const messageAuthors = new Map(); // messageId -> username
 
 // Simple profanity filter
 const BLOCKED = ["fuck", "shit", "ass", "bitch", "damn", "dick", "crap"];
@@ -37,13 +38,31 @@ function broadcastTyping() {
   io.emit("typing", list);
 }
 
+function isUsernameTaken(username) {
+  for (const user of users.values()) {
+    if (user.username.toLowerCase() === username.toLowerCase()) return true;
+  }
+  return false;
+}
+
 io.on("connection", (socket) => {
   console.log(`Socket connected: ${socket.id}`);
 
-  socket.on("join", (username) => {
+  socket.on("join", (username, callback) => {
+    if (isUsernameTaken(username)) {
+      if (typeof callback === "function") {
+        callback({ error: "Nome de usuário já está em uso. Escolha outro." });
+      }
+      return;
+    }
+
     const user = { id: socket.id, username };
     users.set(socket.id, user);
     broadcastUsers();
+
+    if (typeof callback === "function") {
+      callback({ success: true });
+    }
 
     io.emit("system", {
       id: randomUUID(),
@@ -59,7 +78,6 @@ io.on("connection", (socket) => {
     const user = users.get(socket.id);
     if (!user) return;
 
-    // Support both old string format and new object format
     const content = typeof data === "string" ? data : data.content;
     const replyTo = typeof data === "object" ? data.replyTo : undefined;
 
@@ -84,10 +102,23 @@ io.on("connection", (socket) => {
     }
 
     messageReactions.set(msgId, {});
+    messageAuthors.set(msgId, user.username);
 
     io.emit("message", msg);
     typingUsers.delete(user.username);
     broadcastTyping();
+  });
+
+  socket.on("delete-message", (messageId) => {
+    const user = users.get(socket.id);
+    if (!user) return;
+
+    const author = messageAuthors.get(messageId);
+    if (author !== user.username) return; // only author can delete
+
+    messageAuthors.delete(messageId);
+    messageReactions.delete(messageId);
+    io.emit("message-deleted", messageId);
   });
 
   socket.on("toggle-reaction", ({ messageId, emoji }) => {
@@ -110,6 +141,38 @@ io.on("connection", (socket) => {
     }
 
     io.emit("reaction-updated", { messageId, reactions: { ...reactions } });
+  });
+
+  socket.on("nick", (newName, callback) => {
+    const user = users.get(socket.id);
+    if (!user) return;
+
+    if (!newName || newName.trim().length < 2 || newName.trim().length > 20) {
+      if (typeof callback === "function") callback({ error: "Nome deve ter entre 2 e 20 caracteres." });
+      return;
+    }
+
+    const trimmed = newName.trim();
+    if (isUsernameTaken(trimmed)) {
+      if (typeof callback === "function") callback({ error: "Nome de usuário já está em uso." });
+      return;
+    }
+
+    const oldName = user.username;
+    typingUsers.delete(oldName);
+    user.username = trimmed;
+    users.set(socket.id, user);
+    broadcastUsers();
+    broadcastTyping();
+
+    if (typeof callback === "function") callback({ success: true, username: trimmed });
+
+    io.emit("system", {
+      id: randomUUID(),
+      type: "system",
+      content: `${oldName} agora é ${trimmed}`,
+      timestamp: Date.now(),
+    });
   });
 
   socket.on("typing", () => {
