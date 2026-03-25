@@ -5,97 +5,24 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @layer base {
-  :root {
-    --background: 36 33% 97%;
-    --foreground: 30 10% 15%;
-
-    --card: 36 30% 95%;
-    --card-foreground: 30 10% 15%;
-
-    --popover: 36 30% 95%;
-    --popover-foreground: 30 10% 15%;
-
-    --primary: 30 45% 42%;
-    --primary-foreground: 36 33% 97%;
-
-    --secondary: 33 25% 90%;
-    --secondary-foreground: 30 10% 25%;
-
-    --muted: 33 20% 92%;
-    --muted-foreground: 30 8% 50%;
-
-    --accent: 28 50% 50%;
-    --accent-foreground: 36 33% 97%;
-
-    --destructive: 0 65% 55%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 33 20% 88%;
-    --input: 33 20% 85%;
-    --ring: 30 45% 42%;
-
+  :root, [data-theme] {
     --radius: 0.75rem;
 
-    --bubble-own: 30 40% 88%;
-    --bubble-own-foreground: 30 10% 15%;
-    --bubble-other: 36 30% 95%;
-    --bubble-other-foreground: 30 10% 15%;
-    --system-message: 30 8% 50%;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 30 10% 10%;
-    --foreground: 33 20% 90%;
-
-    --card: 30 10% 13%;
-    --card-foreground: 33 20% 90%;
-
-    --popover: 30 10% 13%;
-    --popover-foreground: 33 20% 90%;
-
-    --primary: 30 40% 55%;
-    --primary-foreground: 30 10% 10%;
-
-    --secondary: 30 10% 18%;
-    --secondary-foreground: 33 20% 85%;
-
-    --muted: 30 8% 18%;
-    --muted-foreground: 33 12% 55%;
-
-    --accent: 28 45% 55%;
-    --accent-foreground: 30 10% 10%;
-
-    --destructive: 0 55% 45%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 30 8% 20%;
-    --input: 30 8% 22%;
-    --ring: 30 40% 55%;
-
-    --bubble-own: 30 25% 22%;
-    --bubble-own-foreground: 33 20% 90%;
-    --bubble-other: 30 10% 16%;
-    --bubble-other-foreground: 33 20% 90%;
-    --system-message: 33 12% 45%;
+    --bubble-own: var(--p);
+    --bubble-own-foreground: var(--pc);
+    --bubble-other: var(--b2, var(--b1));
+    --bubble-other-foreground: var(--bc);
+    --system-message: var(--bc);
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-base-300;
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-base-100 text-base-content font-sans antialiased;
     font-family: 'DM Sans', sans-serif;
   }
 }
@@ -103,7 +30,7 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
+    scrollbar-color: oklch(var(--b3, var(--b2)) / 1) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
@@ -112,7 +39,7 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--border));
+    background-color: oklch(var(--b3, var(--b2)) / 1);
     border-radius: 3px;
   }
 }
