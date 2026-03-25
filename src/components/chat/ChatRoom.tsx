@@ -77,7 +77,7 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
           )}
         </div>
         <div className="flex items-center gap-1">
-          <ThemeToggle dark={dark} toggle={toggle} />
+          <ThemeToggle theme={theme} themes={themes} setTheme={setTheme} />
           <button
             onClick={() => setShowUsers(!showUsers)}
             className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
