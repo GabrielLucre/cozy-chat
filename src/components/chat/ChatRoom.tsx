@@ -15,7 +15,7 @@ interface ChatRoomProps {
 
 const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
   const { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, sendTyping, toggleReaction } = useSocket();
-  const { dark, toggle } = useTheme();
+  const { theme, setTheme, themes } = useTheme();
   const [input, setInput] = useState("");
   const [showUsers, setShowUsers] = useState(false);
   const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
