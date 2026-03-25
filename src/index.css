@@ -5,32 +5,23 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @layer base {
-  :root, [data-theme] {
-    --radius: 0.75rem;
-
-    --bubble-own: var(--p);
-    --bubble-own-foreground: var(--pc);
-    --bubble-other: var(--b2, var(--b1));
-    --bubble-other-foreground: var(--bc);
-    --system-message: var(--bc);
-  }
-}
-
-@layer base {
   * {
-    @apply border-base-300;
+    border-color: var(--color-base-300);
   }
 
   body {
-    @apply bg-base-100 text-base-content font-sans antialiased;
+    background-color: var(--color-base-100);
+    color: var(--color-base-content);
     font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: oklch(var(--b3, var(--b2)) / 1) transparent;
+    scrollbar-color: var(--color-base-300) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
@@ -39,7 +30,7 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: oklch(var(--b3, var(--b2)) / 1);
+    background-color: var(--color-base-300);
     border-radius: 3px;
   }
 }
