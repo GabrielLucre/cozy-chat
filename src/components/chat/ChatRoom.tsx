@@ -8,13 +8,14 @@ import SystemMessage from "./SystemMessage";
 import UsersList from "./UsersList";
 import ThemeToggle from "./ThemeToggle";
 import EmojiPicker from "./EmojiPicker";
+import { toast } from "sonner";
 
 interface ChatRoomProps {
   initialUsername: string;
 }
 
 const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
-  const { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, sendTyping, toggleReaction } = useSocket();
+  const { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, deleteMessage, sendTyping, toggleReaction, changeNick, clearMessages } = useSocket();
   const { theme, setTheme, themes } = useTheme();
   const [input, setInput] = useState("");
   const [showUsers, setShowUsers] = useState(false);
@@ -34,12 +35,47 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typingUsers]);
 
-  const handleSend = () => {
+  const handleCommand = async (text: string): Promise<boolean> => {
+    if (!text.startsWith("/")) return false;
+
+    const parts = text.split(" ");
+    const cmd = parts[0].toLowerCase();
+
+    if (cmd === "/clear") {
+      clearMessages();
+      toast.success("Chat limpo.");
+      return true;
+    }
+
+    if (cmd === "/nick") {
+      const newName = parts.slice(1).join(" ").trim();
+      if (!newName) {
+        toast.error("Uso: /nick <novoNome>");
+        return true;
+      }
+      const result = await changeNick(newName);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(`Nome alterado para ${result.username}`);
+      }
+      return true;
+    }
+
+    toast.error(`Comando desconhecido: ${cmd}`);
+    return true;
+  };
+
+  const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
-    sendMessage(trimmed, replyingTo || undefined);
+
+    const wasCommand = await handleCommand(trimmed);
+    if (!wasCommand) {
+      sendMessage(trimmed, replyingTo || undefined);
+      setReplyingTo(null);
+    }
     setInput("");
-    setReplyingTo(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -109,6 +145,7 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
                   replyTo={msg.replyTo}
                   onReact={(emoji) => toggleReaction(msg.id, emoji)}
                   onReply={() => handleReply(msg)}
+                  onDelete={() => deleteMessage(msg.id)}
                 />
               )
             )}
@@ -179,7 +216,7 @@ const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
           <input
             ref={inputRef}
             value={input}
-            onChange={(e) => { setInput(e.target.value); sendTyping(); }}
+            onChange={(e) => { setInput(e.target.value); if (!e.target.value.startsWith("/")) sendTyping(); }}
             onKeyDown={handleKeyDown}
             placeholder={replyingTo ? `Respondendo a ${replyingTo.username}...` : "Digite uma mensagem..."}
             className="flex-1 rounded-xl border bg-card px-4 py-2.5 text-sm text-card-foreground placeholder:text-muted-foreground outline-none ring-ring focus:ring-2 transition-shadow"

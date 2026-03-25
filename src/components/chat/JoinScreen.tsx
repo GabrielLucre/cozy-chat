@@ -1,19 +1,26 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface JoinScreenProps {
-  onJoin: (name: string) => void;
+  onJoin: (name: string) => Promise<{ error?: string }>;
 }
 
 const JoinScreen = ({ onJoin }: JoinScreenProps) => {
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = name.trim();
-    if (trimmed.length >= 2 && trimmed.length <= 20) {
-      onJoin(trimmed);
+    if (trimmed.length < 2 || trimmed.length > 20) return;
+
+    setLoading(true);
+    const result = await onJoin(trimmed);
+    if (result?.error) {
+      toast.error(result.error);
+      setLoading(false);
     }
   };
 
@@ -49,7 +56,8 @@ const JoinScreen = ({ onJoin }: JoinScreenProps) => {
               placeholder="Digite seu nome de exibição..."
               maxLength={20}
               autoFocus
-              className="w-full rounded-xl border bg-card px-4 py-3 text-sm text-card-foreground placeholder:text-muted-foreground outline-none ring-ring focus:ring-2 transition-shadow"
+              disabled={loading}
+              className="w-full rounded-xl border bg-card px-4 py-3 text-sm text-card-foreground placeholder:text-muted-foreground outline-none ring-ring focus:ring-2 transition-shadow disabled:opacity-50"
             />
             <p className="mt-1.5 text-xs text-muted-foreground">
               2–20 caracteres
@@ -60,10 +68,10 @@ const JoinScreen = ({ onJoin }: JoinScreenProps) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            disabled={name.trim().length < 2}
+            disabled={name.trim().length < 2 || loading}
             className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-40"
           >
-            Entrar no Chat
+            {loading ? "Entrando..." : "Entrar no Chat"}
           </motion.button>
         </form>
       </motion.div>

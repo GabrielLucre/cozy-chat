@@ -39,33 +39,49 @@ export function useSocket() {
   const [username, setUsername] = useState<string | null>(null);
   const typingTimeout = useRef<ReturnType<typeof setTimeout>>();
 
-  const connect = useCallback((name: string) => {
-    const s = io(SERVER_URL, { transports: ["websocket", "polling"] });
+  const connect = useCallback((name: string): Promise<{ error?: string }> => {
+    return new Promise((resolve) => {
+      const s = io(SERVER_URL, { transports: ["websocket", "polling"] });
 
-    s.on("connect", () => {
-      setConnected(true);
-      s.emit("join", name);
-      setUsername(name);
+      s.on("connect", () => {
+        setConnected(true);
+        s.emit("join", name, (response: { error?: string; success?: boolean }) => {
+          if (response?.error) {
+            s.disconnect();
+            resolve({ error: response.error });
+          } else {
+            setUsername(name);
+            resolve({});
+          }
+        });
+      });
+
+      s.on("disconnect", () => setConnected(false));
+      s.on("message", (msg: ChatMessage) => setMessages((prev) => [...prev, msg]));
+      s.on("system", (msg: ChatMessage) => setMessages((prev) => [...prev, msg]));
+      s.on("users", (users: OnlineUser[]) => setOnlineUsers(users));
+      s.on("typing", (users: string[]) => setTypingUsers(users));
+
+      s.on("reaction-updated", ({ messageId, reactions }: { messageId: string; reactions: Reactions }) => {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId ? { ...m, reactions } : m))
+        );
+      });
+
+      s.on("message-deleted", (messageId: string) => {
+        setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      });
+
+      setSocket(s);
     });
-
-    s.on("disconnect", () => setConnected(false));
-    s.on("message", (msg: ChatMessage) => setMessages((prev) => [...prev, msg]));
-    s.on("system", (msg: ChatMessage) => setMessages((prev) => [...prev, msg]));
-    s.on("users", (users: OnlineUser[]) => setOnlineUsers(users));
-    s.on("typing", (users: string[]) => setTypingUsers(users));
-
-    s.on("reaction-updated", ({ messageId, reactions }: { messageId: string; reactions: Reactions }) => {
-      setMessages((prev) =>
-        prev.map((m) => (m.id === messageId ? { ...m, reactions } : m))
-      );
-    });
-
-    setSocket(s);
-    return () => { s.disconnect(); };
   }, []);
 
   const sendMessage = useCallback((content: string, replyTo?: ReplyTo) => {
     socket?.emit("message", { content, replyTo });
+  }, [socket]);
+
+  const deleteMessage = useCallback((messageId: string) => {
+    socket?.emit("delete-message", messageId);
   }, [socket]);
 
   const sendTyping = useCallback(() => {
@@ -78,9 +94,27 @@ export function useSocket() {
     socket?.emit("toggle-reaction", { messageId, emoji });
   }, [socket]);
 
+  const changeNick = useCallback((newName: string): Promise<{ error?: string; username?: string }> => {
+    return new Promise((resolve) => {
+      if (!socket) { resolve({ error: "Não conectado." }); return; }
+      socket.emit("nick", newName, (response: { error?: string; success?: boolean; username?: string }) => {
+        if (response?.error) {
+          resolve({ error: response.error });
+        } else {
+          setUsername(response.username || newName);
+          resolve({ username: response.username || newName });
+        }
+      });
+    });
+  }, [socket]);
+
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+  }, []);
+
   useEffect(() => {
     return () => { socket?.disconnect(); };
   }, [socket]);
 
-  return { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, sendTyping, toggleReaction };
+  return { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, deleteMessage, sendTyping, toggleReaction, changeNick, clearMessages };
 }

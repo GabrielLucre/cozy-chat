@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Reply } from "lucide-react";
+import { Reply, Trash2 } from "lucide-react";
 import { REACTION_EMOJIS, Reactions, ReplyTo } from "@/hooks/useSocket";
 
 interface MessageBubbleProps {
@@ -14,9 +14,10 @@ interface MessageBubbleProps {
   replyTo?: ReplyTo;
   onReact: (emoji: string) => void;
   onReply: () => void;
+  onDelete: () => void;
 }
 
-const MessageBubble = ({ content, username, timestamp, isOwn, showName, reactions, currentUser, replyTo, onReact, onReply }: MessageBubbleProps) => {
+const MessageBubble = ({ content, username, timestamp, isOwn, showName, reactions, currentUser, replyTo, onReact, onReply, onDelete }: MessageBubbleProps) => {
   const [showPicker, setShowPicker] = useState(false);
   const time = new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
@@ -45,7 +46,6 @@ const MessageBubble = ({ content, username, timestamp, isOwn, showName, reaction
               : "bg-bubble-other text-bubble-other-foreground rounded-bl-md"
           }`}
         >
-          {/* Reply quote block */}
           {replyTo && (
             <div className={`mb-2 rounded-lg border-l-2 border-primary/50 px-2.5 py-1.5 text-xs ${
               isOwn ? "bg-bubble-own-foreground/5" : "bg-bubble-other-foreground/5"
@@ -59,7 +59,7 @@ const MessageBubble = ({ content, username, timestamp, isOwn, showName, reaction
 
         {/* Action buttons on hover */}
         <div className={`absolute top-1/2 -translate-y-1/2 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ${
-          isOwn ? "-left-16" : "-right-16"
+          isOwn ? "-left-20" : "-right-20"
         }`}>
           <button
             onClick={onReply}
@@ -74,6 +74,15 @@ const MessageBubble = ({ content, username, timestamp, isOwn, showName, reaction
           >
             😊
           </button>
+          {isOwn && (
+            <button
+              onClick={onDelete}
+              className="rounded-full h-6 w-6 flex items-center justify-center bg-muted text-destructive text-xs hover:bg-destructive/10 transition-colors"
+              title="Excluir"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
         </div>
 
         {/* Emoji picker popover */}
