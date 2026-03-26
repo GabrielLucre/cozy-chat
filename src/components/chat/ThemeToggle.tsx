@@ -32,10 +32,10 @@ const ThemeToggle = ({ theme, themes, setTheme }: ThemeToggleProps) => (
           >
             <span
               data-theme={t}
-              className="flex h-4 w-4 shrink-0 overflow-hidden rounded-full"
+              className="flex h-6 w-6 shrink-0 overflow-hidden p-1 rounded-sm"
             >
-              <span className="h-full w-1/2 bg-primary" />
-              <span className="h-full w-1/2 bg-secondary" />
+              <span className="h-full w-1/2 rounded-l-[4px] bg-primary" />
+              <span className="h-full w-1/2 rounded-r-[4px] bg-secondary" />
             </span>
             {t}
           </button>

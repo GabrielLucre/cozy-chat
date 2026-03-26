@@ -29,8 +29,6 @@ export interface OnlineUser {
 
 export const REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
 
-const SERVER_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
-
 export function useSocket() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
@@ -43,7 +41,11 @@ export function useSocket() {
 
   const connect = useCallback((name: string, password?: string): Promise<{ error?: string }> => {
     return new Promise((resolve) => {
-      const s = io(SERVER_URL, { transports: ["websocket", "polling"] });
+      const s = io(
+        import.meta.env.PROD
+          ? undefined
+          : "http://localhost:3001"
+      );
 
       s.on("connect", () => {
         setConnected(true);

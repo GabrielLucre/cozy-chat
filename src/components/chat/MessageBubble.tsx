@@ -43,7 +43,7 @@ const MessageBubble = ({ content, username, timestamp, isOwn, showName, reaction
             {username}
           </span>
           {isAuthorAdmin && (
-            <span className="inline-flex items-center gap-0.5 rounded bg-warning/20 px-1 py-px text-[9px] font-bold text-warning">
+            <span className="inline-flex items-center gap-0.5 rounded bg-warning/20 px-1 py-px text-[10px] font-bold text-warning">
               <Shield className="h-2.5 w-2.5" />
               ADMIN
             </span>
@@ -55,8 +55,8 @@ const MessageBubble = ({ content, username, timestamp, isOwn, showName, reaction
         <div
           className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
             isOwn
-              ? "bg-bubble-own text-bubble-own-foreground rounded-br-md"
-              : "bg-bubble-other text-bubble-other-foreground rounded-bl-md"
+              ? "bg-bubble-own text-bubble-own-foreground rounded-br-md mr-4"
+              : "bg-bubble-other text-bubble-other-foreground rounded-bl-md ml-4"
           }`}
         >
           {replyTo && (

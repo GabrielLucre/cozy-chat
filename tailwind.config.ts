@@ -70,9 +70,9 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius-box, 0.75rem)",
-        md: "var(--radius-field, 0.5rem)",
-        sm: "calc(var(--radius-field, 0.5rem) - 2px)",
+        lg: "0.75rem",
+        md: "0.5rem",
+        sm: "0.375rem",
       },
       keyframes: {
         "accordion-down": {
@@ -93,6 +93,8 @@ export default {
   plugins: [
     require("tailwindcss-animate"),
     require("daisyui")({
+      base: false,      // remove estilos base (reset)
+      styled: false,    // remove estilos de componentes
       themes: [
         "light --default", "dark --prefersdark", "cupcake", "bumblebee", "emerald", "corporate",
         "synthwave", "retro", "cyberpunk", "valentine", "halloween", "garden",

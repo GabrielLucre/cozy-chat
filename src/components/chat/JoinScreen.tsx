@@ -46,7 +46,7 @@ const JoinScreen = ({ onJoin }: JoinScreenProps) => {
           >
             <MessageCircle className="h-8 w-8 text-primary-foreground" />
           </motion.div>
-          <h1 className="text-2xl font-bold tracking-tight">LAN Chat</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Cozy Chat</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Entre na conversa pela sua rede local
           </p>
@@ -76,7 +76,6 @@ const JoinScreen = ({ onJoin }: JoinScreenProps) => {
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="overflow-hidden"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Shield className="h-4 w-4 text-warning" />

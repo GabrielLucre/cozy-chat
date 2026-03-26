@@ -36,7 +36,16 @@ const ChatRoom = ({ initialUsername, socketHook }: ChatRoomProps) => {
     if (!text.startsWith("/")) return false;
 
     const parts = text.split(" ");
-    const cmd = parts[0].toLowerCase();
+    const cmd = parts[0].toLowerCase();  
+
+    if (cmd === "/help") {
+      const commands = isAdmin 
+        ? "/help, /clear, /nick, /kick, /mute, /unmute, /clearall" 
+        : "/help, /clear, /nick";
+      
+      toast.success(`Comandos: ${commands}`);
+      return true;
+    }
 
     if (cmd === "/clear") {
       clearMessages();
@@ -134,7 +143,7 @@ const ChatRoom = ({ initialUsername, socketHook }: ChatRoomProps) => {
     <div className="flex h-screen flex-col">
       <header className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
-          <h1 className="text-sm font-bold tracking-tight">LAN Chat</h1>
+          <h1 className="text-sm font-bold tracking-tight">Cozy Chat</h1>
           {connected ? (
             <span className="h-2 w-2 rounded-full bg-accent" />
           ) : (
@@ -247,14 +256,6 @@ const ChatRoom = ({ initialUsername, socketHook }: ChatRoomProps) => {
       </AnimatePresence>
 
       <footer className="border-t px-4 py-3">
-        {isAdmin && (
-          <div className="mb-2 flex flex-wrap gap-1.5 text-[10px] text-muted-foreground">
-            <span className="rounded bg-muted px-1.5 py-0.5">/kick &lt;user&gt;</span>
-            <span className="rounded bg-muted px-1.5 py-0.5">/mute &lt;user&gt;</span>
-            <span className="rounded bg-muted px-1.5 py-0.5">/unmute &lt;user&gt;</span>
-            <span className="rounded bg-muted px-1.5 py-0.5">/clearall</span>
-          </div>
-        )}
         <div className="flex items-center gap-2">
           <EmojiPicker onSelect={(emoji) => { setInput((v) => v + emoji); inputRef.current?.focus(); }} />
           <input
