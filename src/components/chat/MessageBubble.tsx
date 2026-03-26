@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Reply, Trash2 } from "lucide-react";
+import { Reply, Trash2, Shield } from "lucide-react";
 import { REACTION_EMOJIS, Reactions, ReplyTo } from "@/hooks/useSocket";
 
 interface MessageBubbleProps {
@@ -12,18 +12,23 @@ interface MessageBubbleProps {
   reactions?: Reactions;
   currentUser: string | null;
   replyTo?: ReplyTo;
+  isAdmin?: boolean;
+  isAuthorAdmin?: boolean;
   onReact: (emoji: string) => void;
   onReply: () => void;
   onDelete: () => void;
 }
 
-const MessageBubble = ({ content, username, timestamp, isOwn, showName, reactions, currentUser, replyTo, onReact, onReply, onDelete }: MessageBubbleProps) => {
+const MessageBubble = ({ content, username, timestamp, isOwn, showName, reactions, currentUser, replyTo, isAdmin, isAuthorAdmin, onReact, onReply, onDelete }: MessageBubbleProps) => {
   const [showPicker, setShowPicker] = useState(false);
   const time = new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   const activeReactions = reactions
     ? Object.entries(reactions).filter(([, users]) => users.length > 0)
     : [];
+
+  // Admin can delete any message, regular users only their own
+  const canDelete = isOwn || isAdmin;
 
   return (
     <motion.div
@@ -33,9 +38,17 @@ const MessageBubble = ({ content, username, timestamp, isOwn, showName, reaction
       className={`group flex flex-col ${isOwn ? "items-end" : "items-start"}`}
     >
       {showName && !isOwn && (
-        <span className="mb-0.5 ml-3 text-xs font-medium text-muted-foreground">
-          {username}
-        </span>
+        <div className="mb-0.5 ml-3 flex items-center gap-1">
+          <span className="text-xs font-medium text-muted-foreground">
+            {username}
+          </span>
+          {isAuthorAdmin && (
+            <span className="inline-flex items-center gap-0.5 rounded bg-warning/20 px-1 py-px text-[9px] font-bold text-warning">
+              <Shield className="h-2.5 w-2.5" />
+              ADMIN
+            </span>
+          )}
+        </div>
       )}
 
       <div className="relative">
@@ -74,7 +87,7 @@ const MessageBubble = ({ content, username, timestamp, isOwn, showName, reaction
           >
             😊
           </button>
-          {isOwn && (
+          {canDelete && (
             <button
               onClick={onDelete}
               className="rounded-full h-6 w-6 flex items-center justify-center bg-muted text-destructive text-xs hover:bg-destructive/10 transition-colors"
