@@ -24,6 +24,7 @@ export interface ChatMessage {
 export interface OnlineUser {
   id: string;
   username: string;
+  isAdmin?: boolean;
 }
 
 export const REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
@@ -37,20 +38,22 @@ export function useSocket() {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [username, setUsername] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const typingTimeout = useRef<ReturnType<typeof setTimeout>>();
 
-  const connect = useCallback((name: string): Promise<{ error?: string }> => {
+  const connect = useCallback((name: string, password?: string): Promise<{ error?: string }> => {
     return new Promise((resolve) => {
       const s = io(SERVER_URL, { transports: ["websocket", "polling"] });
 
       s.on("connect", () => {
         setConnected(true);
-        s.emit("join", name, (response: { error?: string; success?: boolean }) => {
+        s.emit("join", { username: name, password }, (response: { error?: string; success?: boolean; isAdmin?: boolean }) => {
           if (response?.error) {
             s.disconnect();
             resolve({ error: response.error });
           } else {
             setUsername(name);
+            setIsAdmin(response?.isAdmin || false);
             resolve({});
           }
         });
@@ -61,6 +64,16 @@ export function useSocket() {
       s.on("system", (msg: ChatMessage) => setMessages((prev) => [...prev, msg]));
       s.on("users", (users: OnlineUser[]) => setOnlineUsers(users));
       s.on("typing", (users: string[]) => setTypingUsers(users));
+      s.on("clear-all", () => setMessages([]));
+
+      s.on("kicked", (reason: string) => {
+        s.disconnect();
+        setConnected(false);
+        setUsername(null);
+        setMessages([]);
+        alert(reason);
+        window.location.reload();
+      });
 
       s.on("reaction-updated", ({ messageId, reactions }: { messageId: string; reactions: Reactions }) => {
         setMessages((prev) =>
@@ -112,9 +125,42 @@ export function useSocket() {
     setMessages([]);
   }, []);
 
+  // Admin commands
+  const adminKick = useCallback((target: string): Promise<{ error?: string }> => {
+    return new Promise((resolve) => {
+      if (!socket) { resolve({ error: "Não conectado." }); return; }
+      socket.emit("admin-kick", target, (r: { error?: string }) => resolve(r || {}));
+    });
+  }, [socket]);
+
+  const adminClearAll = useCallback((): Promise<{ error?: string }> => {
+    return new Promise((resolve) => {
+      if (!socket) { resolve({ error: "Não conectado." }); return; }
+      socket.emit("admin-clearall", null, (r: { error?: string }) => resolve(r || {}));
+    });
+  }, [socket]);
+
+  const adminMute = useCallback((target: string): Promise<{ error?: string }> => {
+    return new Promise((resolve) => {
+      if (!socket) { resolve({ error: "Não conectado." }); return; }
+      socket.emit("admin-mute", target, (r: { error?: string }) => resolve(r || {}));
+    });
+  }, [socket]);
+
+  const adminUnmute = useCallback((target: string): Promise<{ error?: string }> => {
+    return new Promise((resolve) => {
+      if (!socket) { resolve({ error: "Não conectado." }); return; }
+      socket.emit("admin-unmute", target, (r: { error?: string }) => resolve(r || {}));
+    });
+  }, [socket]);
+
   useEffect(() => {
     return () => { socket?.disconnect(); };
   }, [socket]);
 
-  return { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, deleteMessage, sendTyping, toggleReaction, changeNick, clearMessages };
+  return {
+    connected, messages, onlineUsers, typingUsers, username, isAdmin,
+    connect, sendMessage, deleteMessage, sendTyping, toggleReaction,
+    changeNick, clearMessages, adminKick, adminClearAll, adminMute, adminUnmute,
+  };
 }

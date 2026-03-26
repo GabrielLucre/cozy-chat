@@ -1,15 +1,20 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { MessageCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MessageCircle, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 interface JoinScreenProps {
-  onJoin: (name: string) => Promise<{ error?: string }>;
+  onJoin: (name: string, password?: string) => Promise<{ error?: string }>;
 }
+
+const ADMIN_NAME = "Zee";
 
 const JoinScreen = ({ onJoin }: JoinScreenProps) => {
   const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const needsPassword = name.trim().toLowerCase() === ADMIN_NAME.toLowerCase();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +22,7 @@ const JoinScreen = ({ onJoin }: JoinScreenProps) => {
     if (trimmed.length < 2 || trimmed.length > 20) return;
 
     setLoading(true);
-    const result = await onJoin(trimmed);
+    const result = await onJoin(trimmed, needsPassword ? password : undefined);
     if (result?.error) {
       toast.error(result.error);
       setLoading(false);
@@ -64,11 +69,36 @@ const JoinScreen = ({ onJoin }: JoinScreenProps) => {
             </p>
           </div>
 
+          <AnimatePresence>
+            {needsPassword && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="h-4 w-4 text-warning" />
+                  <span className="text-xs font-medium text-warning">Conta de administrador — senha necessária</span>
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Senha do administrador..."
+                  disabled={loading}
+                  className="w-full rounded-xl border bg-card px-4 py-3 text-sm text-card-foreground placeholder:text-muted-foreground outline-none ring-ring focus:ring-2 transition-shadow disabled:opacity-50"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            disabled={name.trim().length < 2 || loading}
+            disabled={name.trim().length < 2 || loading || (needsPassword && !password)}
             className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-40"
           >
             {loading ? "Entrando..." : "Entrar no Chat"}
