@@ -9,10 +9,10 @@ const Index = () => {
   const [username, setUsername] = useState("");
   useTheme();
 
-  const { connect } = useSocket();
+  const socketHook = useSocket();
 
   const handleJoin = async (name: string): Promise<{ error?: string }> => {
-    const result = await connect(name);
+    const result = await socketHook.connect(name);
     if (!result?.error) {
       setUsername(name);
       setJoined(true);
@@ -24,7 +24,7 @@ const Index = () => {
     return <JoinScreen onJoin={handleJoin} />;
   }
 
-  return <ChatRoom initialUsername={username} />;
+  return <ChatRoom initialUsername={username} socketHook={socketHook} />;
 };
 
 export default Index;
