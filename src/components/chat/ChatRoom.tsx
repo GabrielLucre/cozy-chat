@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Users, X } from "lucide-react";
-import { useSocket, ChatMessage, ReplyTo } from "@/hooks/useSocket";
+import { ChatMessage, ReplyTo } from "@/hooks/useSocket";
 import { useTheme } from "@/hooks/useTheme";
 import MessageBubble from "./MessageBubble";
 import SystemMessage from "./SystemMessage";
@@ -12,24 +12,17 @@ import { toast } from "sonner";
 
 interface ChatRoomProps {
   initialUsername: string;
+  socketHook: ReturnType<typeof import("@/hooks/useSocket").useSocket>;
 }
 
-const ChatRoom = ({ initialUsername }: ChatRoomProps) => {
-  const { connected, messages, onlineUsers, typingUsers, username, connect, sendMessage, deleteMessage, sendTyping, toggleReaction, changeNick, clearMessages } = useSocket();
+const ChatRoom = ({ initialUsername, socketHook }: ChatRoomProps) => {
+  const { connected, messages, onlineUsers, typingUsers, username, sendMessage, deleteMessage, sendTyping, toggleReaction, changeNick, clearMessages } = socketHook;
   const { theme, setTheme, themes } = useTheme();
   const [input, setInput] = useState("");
   const [showUsers, setShowUsers] = useState(false);
   const [replyingTo, setReplyingTo] = useState<ReplyTo | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const hasConnected = useRef(false);
-
-  useEffect(() => {
-    if (!hasConnected.current) {
-      hasConnected.current = true;
-      connect(initialUsername);
-    }
-  }, [initialUsername, connect]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
