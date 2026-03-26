@@ -1,5 +1,5 @@
 import { OnlineUser } from "@/hooks/useSocket";
-import { Circle } from "lucide-react";
+import { Circle, Shield } from "lucide-react";
 
 interface UsersListProps {
   users: OnlineUser[];
@@ -16,6 +16,9 @@ const UsersList = ({ users, currentUser }: UsersListProps) => (
         <Circle className="h-2 w-2 fill-accent text-accent" />
         <span className={u.username === currentUser ? "font-semibold" : ""}>
           {u.username}
+          {u.isAdmin && (
+            <Shield className="ml-1 inline h-3 w-3 text-warning" />
+          )}
           {u.username === currentUser && (
             <span className="ml-1 text-xs text-muted-foreground">(você)</span>
           )}

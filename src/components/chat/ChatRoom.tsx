@@ -16,7 +16,11 @@ interface ChatRoomProps {
 }
 
 const ChatRoom = ({ initialUsername, socketHook }: ChatRoomProps) => {
-  const { connected, messages, onlineUsers, typingUsers, username, sendMessage, deleteMessage, sendTyping, toggleReaction, changeNick, clearMessages } = socketHook;
+  const {
+    connected, messages, onlineUsers, typingUsers, username, isAdmin,
+    sendMessage, deleteMessage, sendTyping, toggleReaction, changeNick, clearMessages,
+    adminKick, adminClearAll, adminMute, adminUnmute,
+  } = socketHook;
   const { theme, setTheme, themes } = useTheme();
   const [input, setInput] = useState("");
   const [showUsers, setShowUsers] = useState(false);
@@ -53,6 +57,38 @@ const ChatRoom = ({ initialUsername, socketHook }: ChatRoomProps) => {
         toast.success(`Nome alterado para ${result.username}`);
       }
       return true;
+    }
+
+    // Admin commands
+    if (isAdmin) {
+      const target = parts.slice(1).join(" ").trim();
+
+      if (cmd === "/kick") {
+        if (!target) { toast.error("Uso: /kick <usuário>"); return true; }
+        const r = await adminKick(target);
+        if (r.error) toast.error(r.error); else toast.success(`${target} foi removido.`);
+        return true;
+      }
+
+      if (cmd === "/clearall") {
+        const r = await adminClearAll();
+        if (r.error) toast.error(r.error); else toast.success("Todas as mensagens foram limpas.");
+        return true;
+      }
+
+      if (cmd === "/mute") {
+        if (!target) { toast.error("Uso: /mute <usuário>"); return true; }
+        const r = await adminMute(target);
+        if (r.error) toast.error(r.error); else toast.success(`${target} foi silenciado.`);
+        return true;
+      }
+
+      if (cmd === "/unmute") {
+        if (!target) { toast.error("Uso: /unmute <usuário>"); return true; }
+        const r = await adminUnmute(target);
+        if (r.error) toast.error(r.error); else toast.success(`${target} foi dessilenciado.`);
+        return true;
+      }
     }
 
     toast.error(`Comando desconhecido: ${cmd}`);
@@ -104,6 +140,11 @@ const ChatRoom = ({ initialUsername, socketHook }: ChatRoomProps) => {
           ) : (
             <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
           )}
+          {isAdmin && (
+            <span className="rounded-md bg-warning/20 px-1.5 py-0.5 text-[10px] font-bold text-warning">
+              ADMIN
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <ThemeToggle theme={theme} themes={themes} setTheme={setTheme} />
@@ -136,6 +177,8 @@ const ChatRoom = ({ initialUsername, socketHook }: ChatRoomProps) => {
                   reactions={msg.reactions}
                   currentUser={username}
                   replyTo={msg.replyTo}
+                  isAdmin={isAdmin}
+                  isAuthorAdmin={onlineUsers.find((u) => u.username === msg.username)?.isAdmin}
                   onReact={(emoji) => toggleReaction(msg.id, emoji)}
                   onReply={() => handleReply(msg)}
                   onDelete={() => deleteMessage(msg.id)}
@@ -204,6 +247,14 @@ const ChatRoom = ({ initialUsername, socketHook }: ChatRoomProps) => {
       </AnimatePresence>
 
       <footer className="border-t px-4 py-3">
+        {isAdmin && (
+          <div className="mb-2 flex flex-wrap gap-1.5 text-[10px] text-muted-foreground">
+            <span className="rounded bg-muted px-1.5 py-0.5">/kick &lt;user&gt;</span>
+            <span className="rounded bg-muted px-1.5 py-0.5">/mute &lt;user&gt;</span>
+            <span className="rounded bg-muted px-1.5 py-0.5">/unmute &lt;user&gt;</span>
+            <span className="rounded bg-muted px-1.5 py-0.5">/clearall</span>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <EmojiPicker onSelect={(emoji) => { setInput((v) => v + emoji); inputRef.current?.focus(); }} />
           <input

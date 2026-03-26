@@ -11,8 +11,8 @@ const Index = () => {
 
   const socketHook = useSocket();
 
-  const handleJoin = async (name: string): Promise<{ error?: string }> => {
-    const result = await socketHook.connect(name);
+  const handleJoin = async (name: string, password?: string): Promise<{ error?: string }> => {
+    const result = await socketHook.connect(name, password);
     if (!result?.error) {
       setUsername(name);
       setJoined(true);
